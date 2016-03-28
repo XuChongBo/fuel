@@ -18,11 +18,12 @@ from fuel.converters import cifar10
 from fuel.converters import cifar100
 from fuel.converters import dogs_vs_cats
 from fuel.converters import iris
+from fuel.converters import irisx
 from fuel.converters import mnist
 from fuel.converters import svhn
 from fuel.converters import ilsvrc2010
 from fuel.converters import youtube_audio
-
+from fuel.converters import iam_ondb
 __version__ = '0.2'
 all_converters = (
     ('adult', adult.fill_subparser),
@@ -33,7 +34,9 @@ all_converters = (
     ('cifar100', cifar100.fill_subparser),
     ('dogs_vs_cats', dogs_vs_cats.fill_subparser),
     ('iris', iris.fill_subparser),
+    ('irisx', irisx.fill_subparser),
     ('mnist', mnist.fill_subparser),
     ('svhn', svhn.fill_subparser),
     ('ilsvrc2010', ilsvrc2010.fill_subparser),
-    ('youtube_audio', youtube_audio.fill_subparser))
+    ('youtube_audio', youtube_audio.fill_subparser),
+    ('iam_ondb', iam_ondb.fill_subparser))

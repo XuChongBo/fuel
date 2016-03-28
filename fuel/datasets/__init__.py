@@ -11,7 +11,9 @@ from fuel.datasets.cifar100 import CIFAR100
 from fuel.datasets.caltech101_silhouettes import CalTech101Silhouettes
 from fuel.datasets.dogs_vs_cats import DogsVsCats
 from fuel.datasets.iris import Iris
+from fuel.datasets.irisx import Irisx
 from fuel.datasets.mnist import MNIST
 from fuel.datasets.svhn import SVHN
 from fuel.datasets.text import TextFile
 from fuel.datasets.billion import OneBillionWord
+from fuel.datasets.iam_ondb import IAM_ONDB

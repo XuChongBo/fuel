@@ -1,0 +1,12 @@
+
+===== install your fork of Fuel in editable mode
+
+1. git checkout master 
+2. sudo pip install -e .
+
+
+$sudo pip install -e file:.#egg=fuel[test,docs]    not works!!!
+===== set the data path
+add     data_path: "/data/fuelsets"    to ~/.fuel.rc
+
+
