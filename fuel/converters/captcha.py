@@ -106,8 +106,9 @@ def convert_captcha(directory, output_directory,
         for tag, image_path in all_example_paths:
             # Save image
             image = numpy.array(Image.open(image_path))
+            #(height, width, channel) to (channel, height, width)
+            image = image.transpose(2, 0, 1)
             print image.shape
-            assert(image.ndim==3) #(height, width, channel)
             hdf_features[i] = image.flatten()
             hdf_shapes[i] = image.shape
             print image.shape
