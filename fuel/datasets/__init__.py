@@ -17,3 +17,4 @@ from fuel.datasets.svhn import SVHN
 from fuel.datasets.text import TextFile
 from fuel.datasets.billion import OneBillionWord
 from fuel.datasets.iam_ondb import IAM_ONDB
+from fuel.datasets.captcha import Captcha

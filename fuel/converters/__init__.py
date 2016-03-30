@@ -24,6 +24,7 @@ from fuel.converters import svhn
 from fuel.converters import ilsvrc2010
 from fuel.converters import youtube_audio
 from fuel.converters import iam_ondb
+from fuel.converters import captcha
 __version__ = '0.2'
 all_converters = (
     ('adult', adult.fill_subparser),
@@ -39,4 +40,5 @@ all_converters = (
     ('svhn', svhn.fill_subparser),
     ('ilsvrc2010', ilsvrc2010.fill_subparser),
     ('youtube_audio', youtube_audio.fill_subparser),
-    ('iam_ondb', iam_ondb.fill_subparser))
+    ('iam_ondb', iam_ondb.fill_subparser),
+    ('captcha', captcha.fill_subparser))

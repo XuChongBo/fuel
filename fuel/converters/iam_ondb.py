@@ -6,7 +6,9 @@ from PIL import Image
 from fuel.converters.base import check_exists, progress_bar
 from fuel.datasets.hdf5 import H5PYDataset
 
-
+from os.path import splitext, basename
+import time
+import traceback
 
 def get_path_list(root_dir):
     path_list = []
@@ -18,10 +20,61 @@ def get_path_list(root_dir):
                 image_path = os.path.join(root, file)
                 print i, image_path
                 path_list.append(image_path)
+                # if i==1000:
+                #     return path_list
     return path_list
 
-def get_target(index):
-    return 0
+
+def get_target(image_path):
+    """
+    ../lineImages/a02/a02-000/a02-000-06.tif
+
+    h10/h10-415/h10-415z.txt
+    lineImages/p09/p09-124/p09-124z-01.tif  
+    p09-124z-02.tif  p09-124z-03.tif  p09-124z-04.tif  p09-124z-05.tif  p09-124z-06.tif
+
+    ascii/p09/p09-124/p09-124z.txt
+OCR:
+
+CSR:
+
+Then the two men came into the Office,
+and Gus was introducing her. Dr. Horgan' .
+Eye behind his spectacles were friendly
+and his smile kind. "Dr. Pentland told me
+about you, Miss Holme," he said,
+shaking hands.
+
+    """
+    print image_path
+    textline = "null"
+    try:
+        splits = image_path.split('/')
+        subs = splits[-1].split("-")
+        filename = subs[0]+'-'+subs[1]+".txt"
+        index = int(subs[2][:-4])
+        txt_path = os.path.join("./iam_ondb/ascii", splits[-3], splits[-2], filename)
+        print txt_path, index
+        f = open(txt_path)
+        line_list = []
+        is_begin = False
+        for line in f.readlines():
+            line = line.strip()  # kill of the \r\n at the end of line
+            #print line, 
+            if line[0:4]=="CSR:" and len(line)==4:
+                is_begin = True
+            elif is_begin and line!="":
+                line_list.append(line)  
+        textline = line_list[index-1]
+    except :
+        print traceback.format_exc()
+        raw_input('press any key to continue.  assign null to textline.')
+
+    #print len(line)
+    #print line_list[index-1]
+    #print len(line_list)
+    return textline
+
 
 def convert_iam_ondb(directory, output_directory,
                          output_filename='iam_ondb.hdf5'):
@@ -56,6 +109,9 @@ def convert_iam_ondb(directory, output_directory,
     test_num = int(total_num/4.0)
     train_num = total_num - test_num
 
+
+
+
     # Prepare output file
     output_path = os.path.join(output_directory, output_filename)
     h5file = h5py.File(output_path, mode='w')
@@ -64,8 +120,9 @@ def convert_iam_ondb(directory, output_directory,
                                          dtype=dtype)
     hdf_shapes = h5file.create_dataset('image_features_shapes', (total_num, 3),
                                        dtype='int32')
-    hdf_labels = h5file.create_dataset('targets', (total_num, 1), dtype='uint8')
-
+    hdf_labels = h5file.create_dataset('targets', (total_num,), dtype=h5py.special_dtype(vlen=bytes))
+    hdf_labels_shapes = h5file.create_dataset('hdf_labels_shapes', (total_num, 1),
+                                       dtype='int32')
     # Attach shape annotations and scales
     hdf_features.dims.create_scale(hdf_shapes, 'shapes')
     hdf_features.dims[0].attach_scale(hdf_shapes)
@@ -78,10 +135,14 @@ def convert_iam_ondb(directory, output_directory,
     hdf_features.dims.create_scale(hdf_shapes_labels, 'shape_labels')
     hdf_features.dims[0].attach_scale(hdf_shapes_labels)
 
+    hdf_labels.dims.create_scale(hdf_labels_shapes, 'lables_shapes')
+    hdf_labels.dims[0].attach_scale(hdf_labels_shapes)
+
     # Add axis annotations
     hdf_features.dims[0].label = 'batch'
+
     hdf_labels.dims[0].label = 'batch'
-    hdf_labels.dims[1].label = 'index'
+    #hdf_labels.dims[1].label = 'index'
 
     # Convert
 
@@ -108,9 +169,13 @@ def convert_iam_ondb(directory, output_directory,
                 
                 hdf_features[i] = image.flatten()
                 hdf_shapes[i] = image.shape
+                print image.shape
 
                 #get the target
-                hdf_labels[i] = get_target(i)
+                textline = get_target(image_path)
+                print textline
+                hdf_labels[i] = textline #numpy.array(textline)
+                hdf_labels_shapes[i] = len(textline)
 
                 # Update progress
                 i += 1
@@ -122,6 +187,19 @@ def convert_iam_ondb(directory, output_directory,
     split_dict['train'] = dict(zip(sources, [(0, train_num)] * 2))
     split_dict['test'] = dict(zip(sources, [(train_num, total_num)] * 2))
     h5file.attrs['split'] = H5PYDataset.create_split_array(split_dict)
+
+    # data = (('train', 'features', train_features),
+    #         ('train', 'targets', train_labels),
+    #         ('test', 'features', test_features),
+    #         ('test', 'targets', test_labels))
+    # fill_hdf5_file(h5file, data)
+    # h5file['features'].dims[0].label = 'batch'
+    # h5file['features'].dims[1].label = 'channel'
+    # h5file['features'].dims[2].label = 'height'
+    # h5file['features'].dims[3].label = 'width'
+
+    # h5file['targets'].dims[0].label = 'batch'
+    # h5file['targets'].dims[1].label = 'index'
 
     h5file.flush()
     h5file.close()
